@@ -121,6 +121,40 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-# blog_project/settings.py
-LOGOUT_REDIRECT_URL = 'home'
-LOGIN_REDIRECT_URL = 'home' # Redirect to home after login too
+
+# Authentication settings
+LOGIN_REDIRECT_URL = 'home'  # Redirect to home after login
+LOGOUT_REDIRECT_URL = 'home'  # Redirect to home after logout
+LOGIN_URL = 'login'  # Default login URL for @login_required decorator
+
+# Authentication backends
+AUTHENTICATION_BACKENDS = [
+    'blog.auth_backends.EmailOrUsernameModelBackend',  # Custom backend
+    'django.contrib.auth.backends.ModelBackend',  # Default backend
+]
+
+# Session settings for better security and stability
+SESSION_COOKIE_AGE = 86400  # 24 hours
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+# CSRF settings
+CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# Password validation - make it more user-friendly for development
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 6,  # Reduced from default 8 for easier testing
+        }
+    },
+]

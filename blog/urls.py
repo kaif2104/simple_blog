@@ -5,8 +5,11 @@ from .views import (
     SignUpView,
     PostCreateView,
     PostDetailView,
-    PostUpdateView,  # <-- Import this
-    PostDeleteView,  # <-- Import this
+    PostUpdateView,
+    PostDeleteView,
+    custom_logout_view,
+    PasswordChangeView,
+    PasswordChangeDoneView,
 )
 
 urlpatterns = [
@@ -16,7 +19,12 @@ urlpatterns = [
     path('post/new/', PostCreateView.as_view(), name='post_new'),
     path('post/<int:pk>/', PostDetailView.as_view(), name='post_detail'),
 
-    # Add these two new URLs for Task 7
+    # Post edit and delete URLs
     path('post/<int:pk>/edit/', PostUpdateView.as_view(), name='post_edit'),
     path('post/<int:pk>/delete/', PostDeleteView.as_view(), name='post_delete'),
+    
+    # Enhanced authentication URLs
+    path('logout/', custom_logout_view, name='logout'),
+    path('password_change/', PasswordChangeView.as_view(), name='password_change'),
+    path('password_change/done/', PasswordChangeDoneView.as_view(), name='password_change_done'),
 ]
