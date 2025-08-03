@@ -7,6 +7,8 @@ from .views import (
     PostDetailView,
     PostUpdateView,  # <-- Import this
     PostDeleteView,  # <-- Import this
+    CustomLoginView,
+    CustomLogoutView,
 )
 
 urlpatterns = [
@@ -19,4 +21,8 @@ urlpatterns = [
     # Add these two new URLs for Task 7
     path('post/<int:pk>/edit/', PostUpdateView.as_view(), name='post_edit'),
     path('post/<int:pk>/delete/', PostDeleteView.as_view(), name='post_delete'),
+    
+    # Custom login/logout views with flash messages
+    path('accounts/login/', CustomLoginView.as_view(), name='login'),
+    path('accounts/logout/', CustomLogoutView.as_view(), name='logout'),
 ]

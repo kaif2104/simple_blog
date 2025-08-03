@@ -1,9 +1,12 @@
 # blog/views.py
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 from django.views import generic
+from django.contrib import messages
+from django.contrib.auth import login, logout
+from django.contrib.auth.views import LoginView, LogoutView
 
 # Import models and generic views needed
 from .models import Post
@@ -25,10 +28,14 @@ class SignUpView(generic.CreateView):
     form_class = UserCreationForm
     success_url = reverse_lazy('login')
     template_name = 'registration/signup.html'
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Account created successfully! Please log in.')
+        return super().form_valid(form)
 
 
 # This is the view for creating a blog post
-class PostCreateView(CreateView):
+class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     fields = ['title', 'content']
     template_name = 'post_new.html'
@@ -36,6 +43,7 @@ class PostCreateView(CreateView):
 
     def form_valid(self, form):
         form.instance.author = self.request.user
+        messages.success(self.request, 'Your blog post has been created successfully!')
         return super().form_valid(form)
 
 
@@ -55,6 +63,10 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def test_func(self):
         obj = self.get_object()
         return obj.author == self.request.user
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Your blog post has been updated successfully!')
+        return super().form_valid(form)
 
 
 # This is the view for deleting a post (Task 7)
@@ -66,3 +78,24 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         obj = self.get_object()
         return obj.author == self.request.user
+    
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, 'Your blog post has been deleted successfully!')
+        return super().delete(request, *args, **kwargs)
+
+
+# Custom Login View with flash messages
+class CustomLoginView(LoginView):
+    template_name = 'registration/login.html'
+    
+    def form_valid(self, form):
+        messages.success(self.request, f'Welcome back, {form.get_user().username}!')
+        return super().form_valid(form)
+
+
+# Custom Logout View with flash messages
+class CustomLogoutView(LogoutView):
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            messages.success(request, 'You have been logged out successfully!')
+        return super().dispatch(request, *args, **kwargs)
