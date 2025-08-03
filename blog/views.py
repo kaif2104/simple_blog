@@ -1,9 +1,13 @@
 # blog/views.py
 
-from django.shortcuts import render
-from django.contrib.auth.forms import UserCreationForm
+from django.shortcuts import render, redirect
+from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.urls import reverse_lazy
 from django.views import generic
+from django.contrib.auth import logout
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 # Import models and generic views needed
 from .models import Post
@@ -28,7 +32,7 @@ class SignUpView(generic.CreateView):
 
 
 # This is the view for creating a blog post
-class PostCreateView(CreateView):
+class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     fields = ['title', 'content']
     template_name = 'post_new.html'
@@ -66,3 +70,34 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         obj = self.get_object()
         return obj.author == self.request.user
+
+
+# Custom logout view with proper session cleanup
+@login_required
+def custom_logout_view(request):
+    username = request.user.username
+    logout(request)
+    messages.success(request, f'Goodbye {username}! You have been successfully logged out.')
+    return redirect('home')
+
+
+# Password change view
+class PasswordChangeView(LoginRequiredMixin, generic.FormView):
+    form_class = PasswordChangeForm
+    template_name = 'registration/password_change.html'
+    success_url = reverse_lazy('password_change_done')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        messages.success(self.request, 'Your password has been changed successfully!')
+        return super().form_valid(form)
+
+
+# Password change done view
+class PasswordChangeDoneView(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'registration/password_change_done.html'
